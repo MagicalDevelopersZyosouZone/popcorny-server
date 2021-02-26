@@ -1,0 +1,15 @@
+{
+  "name": "bili-sync",
+  "version": "1.0.0",
+  "description": "Sync bilibili player between multiple client",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "build:watch": "npx tsc -w"
+  },
+  "author": "SardineFish",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.2.2"
+  }
+}
