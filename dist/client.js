@@ -40,9 +40,8 @@ class Client {
     }
     recv(data) {
         loglevel_1.default.debug(`recv from ${this.id}`);
-        let msg;
         try {
-            msg = JSON.parse(data);
+            const msg = JSON.parse(data);
             this.onMessage?.(msg, this.id);
         }
         catch (err) {

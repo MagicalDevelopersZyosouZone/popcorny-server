@@ -8,33 +8,18 @@ export interface ServerHandshake extends MessageBase<"handshake">
     clientId: string;
 }
 
-export interface SyncRequest extends MessageBase<"sync-request">
+export interface ForwardMessage extends MessageBase<string>
 {
     clientId: string;
-    tag: number;
-    timestamp: number;
-    currentTime: number;
-    playbackRate: number;
+    recipient: string;
 }
 
-export interface SyncResponse extends MessageBase<"sync-response">
+export interface BroadcastMessage extends MessageBase<string>
 {
     clientId: string;
-    tag: number;
-    timestamp: number;
-    currentTime: number;
-    playbackRate: number;
-    response: {
-        clientId: string,
-        tag: number,
-        timestamp: number,
-    }
+    recipient: null;
 }
 
-export interface SyncResponse
-{
-    tag: number;
-    timestamp: number;
-}
-
-export type Message = SyncRequest | SyncResponse | ServerHandshake;
+export type ServerMessage = ServerHandshake;
+export type ClientMessage = ForwardMessage | BroadcastMessage;
+export type Message = ServerMessage | ClientMessage;

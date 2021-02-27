@@ -33,23 +33,18 @@ class Session {
         });
     }
     onMsg(msg, id) {
-        loglevel_1.default.debug(`${msg.type} Client{${id}} -> Session{${this.id}}`);
-        switch (msg.type) {
-            case "sync-request":
-                for (const client of this.clients.values()) {
-                    if (client.id === id)
-                        continue;
-                    client.send(msg);
-                }
-                break;
-            case "sync-response":
-                const client = this.clients.get(msg.response.clientId);
+        if (msg.recipient) {
+            loglevel_1.default.debug(`${msg.type} Client{${id}} -> Session{${this.id}} -> Client{${msg.recipient}}`);
+            const client = this.clients.get(msg.recipient);
+            client?.send(msg);
+        }
+        else {
+            loglevel_1.default.debug(`${msg.type} Client{${id}} -> Session{${this.id}} -> All`);
+            for (const client of this.clients.values()) {
+                if (client.id === id)
+                    continue;
                 client?.send(msg);
-                break;
-            default:
-                loglevel_1.default.warn(`Invalid message from Client{${id}}`);
-                this.clients.get(id)?.close();
-                break;
+            }
         }
     }
 }

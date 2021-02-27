@@ -55,42 +55,20 @@ Sent from server when a websocket conenction joins to a session. Also send for r
 }
 ```
 
-
-
---------
-
-### Client Sync Request
-Send self player state to all clients in session and request for a sync response.
+### Forward Message
+Forward message must contains following fields. The message will be forward to the recipient.
 ```json
 {
-    "type": "sync-request",
     "clientId": "self client id",
-    "tag": "xxxxxx",
-    "timestamp": 123456789,
-    "currentTime": 123,
-    "playbackRate": 1.23,
+    "recipient": "id of recipient",
 }
 ```
 
---------
-
-### Client Sync Response
-Send self player state to the client sending the `sync-request`.
-
-Should be sent immediately when receive a `sync-request`.
-
+### Boradcast Message
+Boradcast message must set `recipient` to `null`. The message will be broadcasted to all clients in current session.
 ```json
 {
-    "type": "sync-request",
     "clientId": "self client id",
-    "tag": "xxxxxx",
-    "timestamp": 123456789,
-    "currentTime": 123,
-    "playbackRate": 1.23,
-    "response": {
-        "clientId": "client id who send sync-request",
-        "tag": "the 'tag' field in the sync-request data",
-        "timestamp": "the 'timestamp' field in the sync-request data"
-    }
+    "recipient": null,
 }
 ```
