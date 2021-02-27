@@ -1,6 +1,7 @@
 import WebSocket, { MessageEvent } from "ws";
-import uuid from "uuid";
+import { v4 as uuid } from "uuid";
 import { Message } from "./message";
+import log from "loglevel";
 
 export class Client
 {
@@ -10,7 +11,7 @@ export class Client
 
     constructor()
     {
-        this.id = uuid.v4();
+        this.id = uuid();
     }
 
     bind(socket: WebSocket)
@@ -52,17 +53,19 @@ export class Client
         }
     }
 
-    recv(ev: MessageEvent)
+    recv(data: WebSocket.Data)
     {
+        log.debug(`recv from ${this.id}`);
         let msg: Message;
         try
         {
-            msg = JSON.parse(ev.data as string) as Message;
+            msg = JSON.parse(data as string) as Message;
 
             this.onMessage?.(msg, this.id);
         }
         catch (err)
         {
+            log.warn(err);
             this.close();
         }
     }

@@ -1,17 +1,26 @@
 import { Client } from "./client";
-import uuid from "uuid";
+import { v4 as uuid } from "uuid";
 import WebSocket from "ws";
 import { Message } from "./message";
+import log from "loglevel";
+
+export interface SessionOptions
+{
+    playerUrl: string;
+}
 
 export class Session
 {
     id: string;
-    url: string;
     clients = new Map<string, Client>();
-    constructor(url: string)
+    options: SessionOptions;
+
+    onExpire?: (session: Session) => void;
+
+    constructor(options: SessionOptions)
     {
-        this.url = url;
-        this.id = uuid.v4();
+        this.options = options;
+        this.id = uuid();
     }
 
     join(client: Client)
@@ -27,6 +36,7 @@ export class Session
 
     onMsg(msg: Message, id: string)
     {
+        log.debug(`${id} -> ${this.id}`);
         for (const client of this.clients.values())
         {
             if (client.id === id)

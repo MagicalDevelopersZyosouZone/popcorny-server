@@ -1,51 +1,61 @@
-import WebSocket, { MessageEvent } from "ws";
 import http from "http";
 import { Socket } from "net";
 import { URL } from "url";
 import { Session } from "./session";
 import { promisify } from "util";
 import { Client } from "./client";
+import log from "loglevel";
+import prefix from "loglevel-plugin-prefix";
+import Koa from "koa";
+import websocket from "koa-easy-ws";
+import Router from "koa-router";
+import Application from "koa";
+import fs from "fs";
+import { router as controllerRouter } from "./controller";
 
-const server = http.createServer();
-const wss = new WebSocket.Server({ noServer: true });
-const sessions = new Map<string, Session>();
+log.enableAll();
+const logger = log.noConflict();
+prefix.reg(logger);
+prefix.apply(logger);
 
-server.listen(5000, "0.0.0.0");
+let options: ServerOptions = {
+    hostname: "localhost",
+    port: 5000,
+    shareLinkBase: "http://localhost:5000/",
+}
 
-const reg = /^\/session\/([^\/]+)(?:\/([^\/]+))$/
-server.on("upgrade", async (request: http.IncomingMessage, socket: Socket, head: Buffer) =>
+try
 {
-    const path = new URL(request.url as string).pathname;
+    options = {
+        ...options,
+        ...require("./config.js").default as ServerOptions
+    };
+}
+catch {
+    log.warn("Failed to load config file, fallback to default configure");
+}
 
-    const caps = reg.exec(path);
-    if (caps && caps[1])
-    {
-        const clientId: string | undefined = caps[2];
-        const sessionId = caps[1];
-        const session = sessions.get(sessionId);
-        if (!session)
-        {
-            socket.end('HTTP/1.1 404 Not Found\r\n\r\n');
-            return;
-        }
+const app = new Koa<Application.DefaultState, ServerContext>();
 
-        wss.handleUpgrade(request, socket, head, (ws) =>
-            handelNewConnection(ws, session, clientId));
-    }
+app.context.options = options;
+app.use(websocket());
+app.use(async (ctx, next) =>
+{
+    await next();
+    log.info(`${ctx.url}`);
 });
+app.use(controllerRouter.routes());
 
-function handelNewConnection(ws: WebSocket, session: Session, clientId: string)
+app.listen(options.port, options.hostname);
+log.info(`Server listen on ${options.hostname}:${options.port}`);
+
+export interface ServerOptions
 {
-    if (clientId)
-    {
-        session.reconnect(clientId, ws);
-    }
-    else
-    {
-        const client = new Client();
-        client.bind(ws);
-        session.join(client);
-    }
-
-        
+    hostname: string;
+    port: number;
+    shareLinkBase: string;
+}
+export interface ServerContext
+{
+    options: ServerOptions;
 }

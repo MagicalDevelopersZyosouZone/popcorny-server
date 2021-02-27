@@ -2,19 +2,29 @@
   "name": "bili-sync",
   "version": "1.0.0",
   "description": "Sync bilibili player between multiple client",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
-    "build:watch": "npx tsc -w"
+    "build:watch": "npx tsc -w",
+    "start": "node ./dist/index.js"
   },
   "author": "SardineFish",
   "license": "MIT",
   "devDependencies": {
+    "@types/co-body": "^5.1.0",
+    "@types/koa": "^2.13.0",
+    "@types/koa-router": "^7.4.1",
     "typescript": "^4.2.2"
   },
   "dependencies": {
     "@types/uuid": "^8.3.0",
     "@types/ws": "^7.4.0",
+    "co-body": "^5.2.0",
+    "koa": "^2.13.1",
+    "koa-easy-ws": "^1.3.0",
+    "koa-router": "^10.0.0",
+    "loglevel": "^1.7.1",
+    "loglevel-plugin-prefix": "^0.8.4",
     "uuid": "^8.3.2",
     "ws": "^7.4.3"
   }
