@@ -31,7 +31,7 @@ app.context.options = options;
 app.use(koa_easy_ws_1.default());
 app.use(async (ctx, next) => {
     await next();
-    loglevel_1.default.info(`${ctx.url}`);
+    loglevel_1.default.info(`${ctx.method} ${ctx.url}`);
 });
 app.use(controller_1.router.routes());
 app.listen(options.port, options.hostname);

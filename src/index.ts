@@ -34,7 +34,7 @@ app.use(websocket());
 app.use(async (ctx, next) =>
 {
     await next();
-    log.info(`${ctx.url}`);
+    log.info(`${ctx.method} ${ctx.url}`);
 });
 app.use(controllerRouter.routes());
 
