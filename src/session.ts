@@ -67,6 +67,10 @@ export class Session
                 const client = this.clients.get(msg.response.clientId);
                 client?.send(msg);
                 break;
+            default:
+                log.warn(`Invalid message from Client{${id}}`);
+                this.clients.get(id)?.close();
+                break;
         }
     }
 }

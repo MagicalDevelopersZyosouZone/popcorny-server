@@ -33,6 +33,7 @@ class Session {
         });
     }
     onMsg(msg, id) {
+        var _a;
         loglevel_1.default.debug(`${msg.type} Client{${id}} -> Session{${this.id}}`);
         switch (msg.type) {
             case "sync-request":
@@ -45,6 +46,10 @@ class Session {
             case "sync-response":
                 const client = this.clients.get(msg.response.clientId);
                 client === null || client === void 0 ? void 0 : client.send(msg);
+                break;
+            default:
+                loglevel_1.default.warn(`Invalid message from Client{${id}}`);
+                (_a = this.clients.get(id)) === null || _a === void 0 ? void 0 : _a.close();
                 break;
         }
     }
