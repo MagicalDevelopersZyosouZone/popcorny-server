@@ -3,14 +3,32 @@ export interface MessageBase<Type extends string>
     type: Type,
 }
 
-export interface Sync extends MessageBase<"sync">
+export interface ServerHandshake extends MessageBase<"handshake">
+{
+    clientId: string;
+}
+
+export interface SyncRequest extends MessageBase<"sync-request">
 {
     clientId: string;
     tag: number;
     timestamp: number;
-    position: number;
+    currentTime: number;
     playbackRate: number;
-    response?: SyncResponse;
+}
+
+export interface SyncResponse extends MessageBase<"sync-response">
+{
+    clientId: string;
+    tag: number;
+    timestamp: number;
+    currentTime: number;
+    playbackRate: number;
+    response: {
+        clientId: string,
+        tag: number,
+        timestamp: number,
+    }
 }
 
 export interface SyncResponse
@@ -19,4 +37,4 @@ export interface SyncResponse
     timestamp: number;
 }
 
-export type Message = Sync;
+export type Message = SyncRequest | SyncResponse | ServerHandshake;

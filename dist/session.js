@@ -15,17 +15,37 @@ class Session {
     join(client) {
         client.onMessage = this.onMsg.bind(this);
         this.clients.set(client.id, client);
+        client.send({
+            "type": "handshake",
+            clientId: client.id
+        });
     }
     reconnect(id, socket) {
-        var _a;
-        (_a = this.clients.get(id)) === null || _a === void 0 ? void 0 : _a.bind(socket);
+        const client = this.clients.get(id);
+        if (!client) {
+            socket.close();
+            return;
+        }
+        client.bind(socket);
+        client.send({
+            "type": "handshake",
+            clientId: client.id
+        });
     }
     onMsg(msg, id) {
-        loglevel_1.default.debug(`${id} -> ${this.id}`);
-        for (const client of this.clients.values()) {
-            if (client.id === id)
-                continue;
-            client.send(msg);
+        loglevel_1.default.debug(`${msg.type} Client{${id}} -> Session{${this.id}}`);
+        switch (msg.type) {
+            case "sync-request":
+                for (const client of this.clients.values()) {
+                    if (client.id === id)
+                        continue;
+                    client.send(msg);
+                }
+                break;
+            case "sync-response":
+                const client = this.clients.get(msg.response.clientId);
+                client === null || client === void 0 ? void 0 : client.send(msg);
+                break;
         }
     }
 }
