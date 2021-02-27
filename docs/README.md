@@ -18,7 +18,7 @@ All API request and response data are sent in JSON, with header `Content-Type: a
 #### Response
 ```json
 {
-    "sharelink": "https://bili-sync.example.com/join/xxxxxx"
+    "sessionId": "xxxxxxxx"
 }
 ```
 

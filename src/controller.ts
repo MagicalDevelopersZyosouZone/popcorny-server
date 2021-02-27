@@ -62,7 +62,7 @@ router.all("/session/:sessionId/:clientId", async (ctx) =>
 
 interface NewSessionResponse
 {
-    sharelink: string;
+    sessionId: string;
 }
 
 router.post<any, JsonBodyContext<SessionOptions>>("/session", jsonBody, async (ctx) =>
@@ -71,7 +71,7 @@ router.post<any, JsonBodyContext<SessionOptions>>("/session", jsonBody, async (c
     const session = sessionManager.new(options);
     ctx.set("Content-Type", "application/json");
     ctx.body = JSON.stringify(<NewSessionResponse>{
-        sharelink: new URL(`join/${session.id}`, ctx.options.shareLinkBase).href
+        sessionId: session.id,
     });
 });
 

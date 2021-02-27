@@ -7,7 +7,6 @@ exports.router = void 0;
 const koa_router_1 = __importDefault(require("koa-router"));
 const client_1 = require("./client");
 const session_manager_1 = require("./session-manager");
-const url_1 = require("url");
 const body_1 = require("./middleware/body");
 const loglevel_1 = __importDefault(require("loglevel"));
 const router = new koa_router_1.default();
@@ -53,7 +52,7 @@ router.post("/session", body_1.jsonBody, async (ctx) => {
     const session = session_manager_1.sessionManager.new(options);
     ctx.set("Content-Type", "application/json");
     ctx.body = JSON.stringify({
-        sharelink: new url_1.URL(`join/${session.id}`, ctx.options.shareLinkBase).href
+        sessionId: session.id,
     });
 });
 //# sourceMappingURL=controller.js.map
