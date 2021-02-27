@@ -19,13 +19,12 @@ class Client {
         socket.on("close", this.close.bind(this));
     }
     close() {
-        var _a;
         if (!this.socket)
             return;
         try {
-            (_a = this.socket) === null || _a === void 0 ? void 0 : _a.close();
+            this.socket?.close();
         }
-        catch (_b) {
+        catch {
             this.socket = null;
         }
     }
@@ -40,12 +39,11 @@ class Client {
         }
     }
     recv(data) {
-        var _a;
         loglevel_1.default.debug(`recv from ${this.id}`);
         let msg;
         try {
             msg = JSON.parse(data);
-            (_a = this.onMessage) === null || _a === void 0 ? void 0 : _a.call(this, msg, this.id);
+            this.onMessage?.(msg, this.id);
         }
         catch (err) {
             loglevel_1.default.warn(err);

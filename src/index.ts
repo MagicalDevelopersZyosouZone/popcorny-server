@@ -1,16 +1,7 @@
-import http from "http";
-import { Socket } from "net";
-import { URL } from "url";
-import { Session } from "./session";
-import { promisify } from "util";
-import { Client } from "./client";
+import { default as Application, default as Koa } from "koa";
+import websocket from "koa-easy-ws";
 import log from "loglevel";
 import prefix from "loglevel-plugin-prefix";
-import Koa from "koa";
-import websocket from "koa-easy-ws";
-import Router from "koa-router";
-import Application from "koa";
-import fs from "fs";
 import { router as controllerRouter } from "./controller";
 
 log.enableAll();
@@ -28,10 +19,11 @@ try
 {
     options = {
         ...options,
-        ...require("./config.js").default as ServerOptions
+        ...require("../config") as ServerOptions
     };
 }
-catch {
+catch (err)
+{
     log.warn("Failed to load config file, fallback to default configure");
 }
 

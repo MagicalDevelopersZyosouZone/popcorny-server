@@ -1,4 +1,5 @@
-export default {
-    hostname: "example.com",
-    shareLinkBase: "https://bili-sync.example.com",
+module.exports = {
+    hostname: "localhost",
+    port: 5000,
+    shareLinkBase: "http://localhost:5000/",
 };
