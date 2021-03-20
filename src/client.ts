@@ -1,13 +1,14 @@
 import WebSocket, { MessageEvent } from "ws";
 import { v4 as uuid } from "uuid";
-import { ClientMessage, Message, ServerClose } from "./message";
+import { ClientMessage, Message } from "./message";
 import log from "loglevel";
 
 export class Client
 {
     id: string;
-    socket: WebSocket | null = null;
     onMessage?: (msg: ClientMessage, id: string) => void;
+
+    private socket: WebSocket | null = null;
 
     constructor()
     {
@@ -16,36 +17,34 @@ export class Client
 
     bind(socket: WebSocket)
     {
-        this.close("Socket reconnect");
+        this.close(1000, "Socket reconnect");
         this.socket = socket;
-        socket.on("message", this.recv.bind(this));
-        socket.on('error', this.close.bind(this));
-        socket.on("close", this.close.bind(this));
+        socket.on("message", this.onMsg);
+        socket.on('error', this.onErr);
+        socket.on("close", this.onClose);
     }
 
-    close(reason: string = "No reason")
+    close(code = 1013, reason: string = "No reason")
     {
+        log.info(`Client{${this.id}} close: ${reason}`);
         if (!this.socket)
             return;
         
         try
         {
-            this.socket?.send(JSON.stringify(<ServerClose>{
-                type: "close",
-                reason,
-            }));
-            this.socket?.close();
+            this.socket?.close(code, reason);
         }
-        catch
-        {
-            this.socket = null;
-        }
+        catch { }
+        this.unbind();
     }
 
     send(message: Message)
     {
         if (!this.socket)
+        {
+            log.debug(`Send failed: Client{${this.id}} offline`);
             return;
+        }
         
         try
         {
@@ -53,11 +52,30 @@ export class Client
         }
         catch (err)
         {
-            this.close("Send failed");
+            this.close(1013, "Send failed");
         }
     }
 
-    recv(data: WebSocket.Data)
+    private unbind()
+    {
+        this.socket?.off("message", this.onMsg);
+        this.socket?.off('error', this.onErr);
+        this.socket?.off("close", this.onClose);
+    }
+
+    private onClose = (code: number, reason: string) =>
+    {
+        log.info(`Client{${this.id}} closed: ${code}: ${reason}`);
+        this.unbind();
+    }
+
+    private onErr = (err: Error) =>
+    {
+        log.warn(`Client{${this.id}} errored: ${err}`);
+        this.close(1013, "Error occured.");
+    }
+
+    private onMsg = (data: WebSocket.Data) =>
     {
         log.debug(`recv from ${this.id}`);
         try
@@ -69,7 +87,7 @@ export class Client
         catch (err)
         {
             log.warn(err);
-            this.close("Internal error");
+            this.close(1013, "Internal error");
         }
     }
 }

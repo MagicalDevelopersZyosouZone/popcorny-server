@@ -105,7 +105,7 @@ export class Session
         SessionManager.remove(this.id);
         for (const client of this.clients.values())
         {
-            client.close("Session expired");
+            client.close(1000, "Session expired");
         }
         this.destroied = true;
     }
