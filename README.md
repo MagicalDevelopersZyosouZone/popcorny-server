@@ -1,5 +1,5 @@
-# bili-sync-server (temporary name)
-Backend server for [bili-sync (temporary name)](#)
+# popcorny-server
+Backend server for [popcorny](https://github.com/MagicalDevelopersZyosouZone/popcorny) - A user script which allows watching web videos together.
 
 [Documentation](./docs/README.md)
 
@@ -8,7 +8,7 @@ Backend server for [bili-sync (temporary name)](#)
 Clone & restore npm packages
 ```shell
 $ git clone ...
-$ cd bili-sync
+$ cd popcorny-server
 $ npm install
 ```
 

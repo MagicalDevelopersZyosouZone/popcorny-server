@@ -1,7 +1,7 @@
 {
-  "name": "bili-sync",
-  "version": "1.0.0",
-  "description": "Sync bilibili player between multiple client",
+  "name": "popcorny-server",
+  "version": "1.0.1",
+  "description": "Backend server for popcorny",
   "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
