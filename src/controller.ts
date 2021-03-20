@@ -10,7 +10,6 @@ import { SessionManager } from "./session-manager";
 
 const router = new Router<any, WebSocketContext & ServerContext>();
 
-
 router.all("/session/:sessionId", async (ctx) =>
 {
     const sessionId = ctx.params.sessionId;

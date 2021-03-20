@@ -1,4 +1,4 @@
-import { Message, ServerHandshake, SyncRequest, SyncResponse } from "../src/message";
+import { BroadcastMessage, ForwardMessage, Message, MessageBase, ServerHandshake } from "../src/message";
 
 export interface PlayerState {
     currentTime: number;
@@ -9,6 +9,7 @@ export class Client
 {
     ws: WebSocket;
     id: string;
+    sessionId: string;
     onMessage?: (msg: Message) => void;
     
     private _ready = false;
@@ -17,6 +18,7 @@ export class Client
     {
         this.ws = new WebSocket(`ws://localhost:5000/session/${sessionId}`);
         this.id = "";
+        this.sessionId = sessionId;
 
         this.ws.onmessage = (ev) =>
         {
@@ -31,33 +33,42 @@ export class Client
 
     get ready() { return this._ready }
 
-    requestSync(playerState: PlayerState, tag = 0)
+    sendto<T extends MessageBase<string>>(clientId: string, data: T)
     {
-        const msg: SyncRequest = {
-            type: "sync-request",
+        const msg = <ForwardMessage>{
+            ...data,
+            recipient: clientId,
             clientId: this.id,
-            tag,
-            timestamp: Date.now(),
-            ...playerState
         };
         this.send(msg);
     }
 
-    responseSync(req: SyncRequest, playerState: PlayerState, tag = 0)
+    broadcast<T extends MessageBase<string>>(data: T)
     {
-        const msg: SyncResponse = {
-            type: "sync-response",
+        const msg = <BroadcastMessage>{
+            ...data,
             clientId: this.id,
-            tag,
-            timestamp: Date.now(),
-            response: {
-                clientId: req.clientId,
-                tag: req.tag,
-                timestamp: req.timestamp,
-            },
-            ...playerState
+            recipient: null,
         };
-        this.send(msg);
+    }
+
+    reconnect()
+    {
+        this._ready = false;
+        console.info("Reconnecting...");
+
+        this.ws = new WebSocket(`ws://localhost:5000/session/${this.sessionId}/${this.id}`);
+        this.ws.onmessage = (ev) =>
+        {
+            const handshake = JSON.parse(ev.data as string) as Message;
+            if (handshake.type !== "handshake")
+                throw new Error("Invalid message from server");
+            if (handshake.clientId !== this.id)
+                throw new Error("Invalid handshake from server.");
+            
+            this.ws.onmessage = this.recv.bind(this);
+            this._ready = true;
+        }
     }
 
     private recv(ev: MessageEvent)
@@ -67,6 +78,14 @@ export class Client
     }
     private send(msg: Message)
     {
-        this.ws.send(JSON.stringify(msg));
+        try
+        {
+            this.ws.send(JSON.stringify(msg));
+        }
+        catch (err)
+        {
+            console.error(`Send failed ${err}`);
+            this.reconnect();
+        }
     }
 }

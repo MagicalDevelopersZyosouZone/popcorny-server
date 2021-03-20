@@ -3,6 +3,7 @@ import websocket from "koa-easy-ws";
 import log from "loglevel";
 import prefix from "loglevel-plugin-prefix";
 import { router as controllerRouter } from "./controller";
+import KoaStatic from "koa-static";
 
 log.enableAll();
 const logger = log.noConflict();
@@ -14,6 +15,7 @@ let options: ServerOptions = {
     port: 5000,
     sessionLifetime: 60,
     loglevel: "info",
+    serveRoot: null,
 }
 
 try
@@ -38,6 +40,10 @@ app.use(async (ctx, next) =>
     await next();
     log.info(`${ctx.method} ${ctx.url}`);
 });
+if (options.serveRoot)
+{
+    app.use(KoaStatic(options.serveRoot));
+}
 app.use(controllerRouter.routes());
 
 app.listen(options.port, options.hostname);
@@ -49,6 +55,7 @@ export interface ServerOptions
     port: number;
     sessionLifetime: number;
     loglevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent';
+    serveRoot: null | string;
 }
 export interface ServerContext
 {
