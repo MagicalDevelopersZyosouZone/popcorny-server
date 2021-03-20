@@ -1,8 +1,8 @@
 import { BroadcastMessage, ForwardMessage, Message, MessageBase, ServerHandshake } from "../src/message";
 
 const baseUrl = window.location.protocol === "https:"
-    ? `wss://${window.location}`
-    : `ws://${window.location}`;
+    ? `wss://${window.location.host}${window.location.pathname.toString().replace(/\/$/, "")}`
+    : `ws://${window.location.host}${window.location.pathname.toString().replace(/\/$/, "")}`
 
 export interface PlayerState {
     currentTime: number;
@@ -14,7 +14,7 @@ export class Client
     ws: WebSocket;
     id: string;
     sessionId: string;
-    onMessage?: (msg: Message) => void;
+    onMessage?: (msg: Message) => void = null;
     
     private _ready = false;
 
@@ -54,6 +54,7 @@ export class Client
             clientId: this.id,
             recipient: null,
         };
+        this.send(msg);
     }
 
     reconnect()

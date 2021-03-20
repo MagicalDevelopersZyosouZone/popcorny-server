@@ -1,8 +1,9 @@
 (() => {
   // test/client.ts
-  var baseUrl = window.location.protocol === "https:" ? `wss://${window.location}` : `ws://${window.location}`;
+  var baseUrl = window.location.protocol === "https:" ? `wss://${window.location.host}${window.location.pathname.toString().replace(/\/$/, "")}` : `ws://${window.location.host}${window.location.pathname.toString().replace(/\/$/, "")}`;
   var Client = class {
     constructor(sessionId) {
+      this.onMessage = null;
       this._ready = false;
       this.ws = new WebSocket(`${baseUrl}/session/${sessionId}`);
       this.id = "";
@@ -33,6 +34,7 @@
         clientId: this.id,
         recipient: null
       };
+      this.send(msg);
     }
     reconnect() {
       this._ready = false;
@@ -229,4 +231,17 @@
   // test/test.ts
   window.Client = Client;
   window.Popcorny = PopcornyAPI;
+  async function createSessionAndClient() {
+    const session = await PopcornyAPI.session.create({}, {playerUrl: ""});
+    const clientA = new Client(session.sessionId);
+    const clientB = new Client(session.sessionId);
+    clientA.onMessage = (msg) => console.log({A: msg});
+    clientB.onMessage = (msg) => console.log({B: msg});
+    return {
+      session,
+      clientA,
+      clientB
+    };
+  }
+  window.createSessionAndClient = createSessionAndClient;
 })();
