@@ -12,7 +12,7 @@ interface SessionInfo
 
 export const PopcornyAPI = {
     session: {
-        create: api("POST", "http://localhost:5000/session")
+        create: api("POST", "session")
             .body({ playerUrl: "string" })
             .response<SessionInfo>()
     }

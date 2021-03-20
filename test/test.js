@@ -1,9 +1,10 @@
 (() => {
   // test/client.ts
+  var baseUrl = window.location.protocol === "https:" ? `wss://${window.location}` : `ws://${window.location}`;
   var Client = class {
     constructor(sessionId) {
       this._ready = false;
-      this.ws = new WebSocket(`ws://localhost:5000/session/${sessionId}`);
+      this.ws = new WebSocket(`${baseUrl}/session/${sessionId}`);
       this.id = "";
       this.sessionId = sessionId;
       this.ws.onmessage = (ev) => {
@@ -36,7 +37,7 @@
     reconnect() {
       this._ready = false;
       console.info("Reconnecting...");
-      this.ws = new WebSocket(`ws://localhost:5000/session/${this.sessionId}/${this.id}`);
+      this.ws = new WebSocket(`${baseUrl}/session/${this.sessionId}/${this.id}`);
       this.ws.onmessage = (ev) => {
         const handshake = JSON.parse(ev.data);
         if (handshake.type !== "handshake")
@@ -221,7 +222,7 @@
   // test/api.ts
   var PopcornyAPI = {
     session: {
-      create: api("POST", "http://localhost:5000/session").body({playerUrl: "string"}).response()
+      create: api("POST", "session").body({playerUrl: "string"}).response()
     }
   };
 

@@ -1,5 +1,9 @@
 import { BroadcastMessage, ForwardMessage, Message, MessageBase, ServerHandshake } from "../src/message";
 
+const baseUrl = window.location.protocol === "https:"
+    ? `wss://${window.location}`
+    : `ws://${window.location}`;
+
 export interface PlayerState {
     currentTime: number;
     playbackRate: number;
@@ -16,7 +20,7 @@ export class Client
 
     constructor(sessionId: string)
     {
-        this.ws = new WebSocket(`ws://localhost:5000/session/${sessionId}`);
+        this.ws = new WebSocket(`${baseUrl}/session/${sessionId}`);
         this.id = "";
         this.sessionId = sessionId;
 
@@ -57,7 +61,8 @@ export class Client
         this._ready = false;
         console.info("Reconnecting...");
 
-        this.ws = new WebSocket(`ws://localhost:5000/session/${this.sessionId}/${this.id}`);
+
+        this.ws = new WebSocket(`${baseUrl}/session/${this.sessionId}/${this.id}`);
         this.ws.onmessage = (ev) =>
         {
             const handshake = JSON.parse(ev.data as string) as Message;
