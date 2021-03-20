@@ -3,10 +3,10 @@ import Router from "koa-router";
 import { ServerContext } from ".";
 import { Client } from "./client";
 import { SessionOptions } from "./session";
-import { sessionManager } from "./session-manager";
 import { URL } from "url";
 import { jsonBody, JsonBodyContext } from "./middleware/body";
 import log from "loglevel";
+import { SessionManager } from "./session-manager";
 
 const router = new Router<any, WebSocketContext & ServerContext>();
 
@@ -14,7 +14,7 @@ const router = new Router<any, WebSocketContext & ServerContext>();
 router.all("/session/:sessionId", async (ctx) =>
 {
     const sessionId = ctx.params.sessionId;
-    const session = sessionManager.get(sessionId);
+    const session = SessionManager.get(sessionId);
     if (!session)
     {
         ctx.response.status = 404;
@@ -39,7 +39,7 @@ router.all("/session/:sessionId", async (ctx) =>
 router.all("/session/:sessionId/:clientId", async (ctx) =>
 {
     const sessionId = ctx.params.sessionId;
-    const session = sessionManager.get(sessionId);
+    const session = SessionManager.get(sessionId);
     if (!session)
     {
         ctx.response.status = 404;
@@ -68,7 +68,7 @@ interface NewSessionResponse
 router.post<any, JsonBodyContext<SessionOptions>>("/session", jsonBody, async (ctx) =>
 {
     const options = ctx.request.body;
-    const session = sessionManager.new(options);
+    const session = SessionManager.new(options, ctx.options.sessionLifetime);
     ctx.set("Content-Type", "application/json");
     ctx.body = JSON.stringify(<NewSessionResponse>{
         sessionId: session.id,

@@ -2,7 +2,9 @@ import { Client } from "./client";
 import { v4 as uuid } from "uuid";
 import WebSocket from "ws";
 import { ClientMessage, Message, ServerHandshake } from "./message";
+import { SessionManager } from "./session-manager";
 import log from "loglevel";
+
 
 export interface SessionOptions
 {
@@ -14,17 +16,25 @@ export class Session
     id: string;
     clients = new Map<string, Client>();
     options: SessionOptions;
+    destroied: boolean;
+    lifetime: number;
 
-    onExpire?: (session: Session) => void;
+    private timeout: NodeJS.Timeout;
 
-    constructor(options: SessionOptions)
+    constructor(options: SessionOptions, lifetime: number)
     {
         this.options = options;
         this.id = uuid();
+        this.destroied = false;
+        this.lifetime = lifetime;
+        this.timeout = setTimeout(this.destroy.bind(this), lifetime * 1000);
     }
 
     join(client: Client)
     {
+        this.checkExpire();
+        this.resetLifetime();
+        
         client.onMessage = this.onMsg.bind(this);
         this.clients.set(client.id, client);
         client.send(<ServerHandshake>{
@@ -35,6 +45,9 @@ export class Session
 
     reconnect(id: string, socket: WebSocket)
     {
+        this.checkExpire();
+        this.resetLifetime();
+
         const client = this.clients.get(id);
         if (!client)
         {
@@ -51,6 +64,9 @@ export class Session
 
     onMsg(msg: ClientMessage, id: string)
     {
+        this.checkExpire();
+        this.resetLifetime();
+        
         if (msg.recipient)
         {
             log.debug(`${msg.type} Client{${id}} -> Session{${this.id}} -> Client{${msg.recipient}}`);
@@ -66,6 +82,31 @@ export class Session
                     continue;
                 client?.send(msg);
             }
+        }
+    }
+    
+    private resetLifetime()
+    {
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(this.destroy.bind(this), this.lifetime * 1000);
+    }
+
+    private checkExpire()
+    {
+        if (this.destroied)
+            throw new Error("Session expired");
+    }
+
+    destroy()
+    {
+        if (this.destroied)
+            throw new Error("Duplicated destroy");
+        log.info(`Session{${this.id}} out of lifetime.`);
+        SessionManager.remove(this.id);
+        this.destroied = true;
+        for (const client of this.clients.values())
+        {
+            client.close();
         }
     }
 }

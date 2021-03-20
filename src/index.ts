@@ -12,7 +12,8 @@ prefix.apply(logger);
 let options: ServerOptions = {
     hostname: "localhost",
     port: 5000,
-    shareLinkBase: "http://localhost:5000/",
+    sessionLifetime: 60,
+    loglevel: "info",
 }
 
 try
@@ -26,6 +27,7 @@ catch (err)
 {
     log.warn("Failed to load config file, fallback to default configure");
 }
+log.setLevel(options.loglevel);
 
 const app = new Koa<Application.DefaultState, ServerContext>();
 
@@ -45,7 +47,8 @@ export interface ServerOptions
 {
     hostname: string;
     port: number;
-    shareLinkBase: string;
+    sessionLifetime: number;
+    loglevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent';
 }
 export interface ServerContext
 {
