@@ -1,6 +1,6 @@
 import WebSocket, { MessageEvent } from "ws";
 import { v4 as uuid } from "uuid";
-import { ClientMessage, Message } from "./message";
+import { ClientMessage, Message, ServerClose } from "./message";
 import log from "loglevel";
 
 export class Client
@@ -16,20 +16,24 @@ export class Client
 
     bind(socket: WebSocket)
     {
-        this.close();
+        this.close("Socket reconnect");
         this.socket = socket;
         socket.on("message", this.recv.bind(this));
         socket.on('error', this.close.bind(this));
         socket.on("close", this.close.bind(this));
     }
 
-    close()
+    close(reason: string = "No reason")
     {
         if (!this.socket)
             return;
         
         try
         {
+            this.socket?.send(JSON.stringify(<ServerClose>{
+                type: "close",
+                reason,
+            }));
             this.socket?.close();
         }
         catch
@@ -49,7 +53,7 @@ export class Client
         }
         catch (err)
         {
-            this.close();
+            this.close("Send failed");
         }
     }
 
@@ -65,7 +69,7 @@ export class Client
         catch (err)
         {
             log.warn(err);
-            this.close();
+            this.close("Internal error");
         }
     }
 }

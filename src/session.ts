@@ -103,10 +103,10 @@ export class Session
             throw new Error("Duplicated destroy");
         log.info(`Session{${this.id}} out of lifetime.`);
         SessionManager.remove(this.id);
-        this.destroied = true;
         for (const client of this.clients.values())
         {
-            client.close();
+            client.close("Session expired");
         }
+        this.destroied = true;
     }
 }
