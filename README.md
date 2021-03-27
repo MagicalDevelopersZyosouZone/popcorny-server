@@ -5,6 +5,8 @@ Backend server for [popcorny](https://github.com/MagicalDevelopersZyosouZone/pop
 
 ## Usage
 
+### Build & run from source
+
 Clone & restore npm packages
 ```shell
 $ git clone ...
@@ -26,4 +28,10 @@ $ vim config.js
 Start server
 ```shell
 $ npm start
+```
+
+Or build and run with docker
+```shell
+$ docker build -t popcorny-server .
+$ docker run --name popcorny-server -d -p 5000:5000 popcorny-server
 ```
